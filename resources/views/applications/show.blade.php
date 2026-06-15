@@ -33,8 +33,18 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-md-4 fw-bold text-muted">Gaji</div>
+                    <div class="col-md-4 fw-bold text-muted">Gaji Ditawarkan</div>
                     <div class="col-md-8">{{ $application->jobListing->salary ?? 'Negosiasi' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold text-muted">Gaji Diharapkan</div>
+                    <div class="col-md-8">
+                        @if($application->expected_salary)
+                            <span class="text-success fw-bold">{{ $application->expected_salary }}</span>
+                        @else
+                            <span class="text-muted fst-italic">Negosiasi</span>
+                        @endif
+                    </div>
                 </div>
 
                 <hr>
