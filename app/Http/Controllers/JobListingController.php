@@ -33,6 +33,16 @@ class JobListingController extends Controller
             $query->where('location', $request->location);
         }
 
+        // Fitur filter sudah/belum dilamar
+        if ($request->has('applied') && $request->applied != '' && Auth::check()) {
+            $appliedIds = Application::where('user_id', Auth::id())->pluck('job_listing_id');
+            if ($request->applied == 'sudah') {
+                $query->whereIn('id', $appliedIds);
+            } elseif ($request->applied == 'belum') {
+                $query->whereNotIn('id', $appliedIds);
+            }
+        }
+
         // Fitur sortir
         if ($request->has('sort')) {
             switch ($request->sort) {
