@@ -6,11 +6,11 @@
 
     {{-- Search & Filter --}}
     <form method="GET" action="{{ route('jobs.index') }}" class="row g-2 mb-4">
-        <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Cari posisi, perusahaan, lokasi..."
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Cari posisi, perusahaan..."
                 value="{{ request('search') }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <select name="type" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Tipe</option>
                 <option value="Full-time" {{ request('type') == 'Full-time' ? 'selected' : '' }}>Full-time</option>
@@ -18,7 +18,23 @@
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">🔍 Cari</button>
+            <select name="location" class="form-select" onchange="this.form.submit()">
+                <option value="">Semua Lokasi</option>
+                @foreach(App\Models\JobListing::distinct()->pluck('location') as $loc)
+                    <option value="{{ $loc }}" {{ request('location') == $loc ? 'selected' : '' }}>{{ $loc }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="sort" class="form-select" onchange="this.form.submit()">
+                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
+                <option value="salary_high" {{ request('sort') == 'salary_high' ? 'selected' : '' }}>Gaji Tertinggi</option>
+                <option value="salary_low" {{ request('sort') == 'salary_low' ? 'selected' : '' }}>Gaji Terendah</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100">🔍</button>
         </div>
         <div class="col-md-1">
             <a href="{{ route('jobs.index') }}" class="btn btn-secondary w-100">Reset</a>

@@ -16,9 +16,11 @@ class JobListingController extends Controller
 
         // Fitur search
         if ($request->has('search') && $request->search != '') {
-            $query->where('title', 'like', '%' . $request->search . '%')
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('company', 'like', '%' . $request->search . '%')
                   ->orWhere('location', 'like', '%' . $request->search . '%');
+            });
         }
 
         // Fitur filter tipe
@@ -26,7 +28,32 @@ class JobListingController extends Controller
             $query->where('type', $request->type);
         }
 
-        $jobs = $query->latest()->paginate(6);
+        // Fitur filter lokasi
+        if ($request->has('location') && $request->location != '') {
+            $query->where('location', $request->location);
+        }
+
+        // Fitur sortir
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'salary_high':
+                    $query->orderBy('salary', 'asc');
+                    break;
+                case 'salary_low':
+                    $query->orderBy('salary', 'desc');
+                    break;
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $jobs = $query->paginate(6);
 
         return view('jobs.index', compact('jobs'));
     }
