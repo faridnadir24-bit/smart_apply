@@ -40,27 +40,75 @@
                     @if(session('error'))
                         <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
-                    <form method="POST" action="{{ route('jobs.apply', $jobListing->id) }}">
-                        @csrf
+
+                    {{-- Form Input --}}
+                    <div id="formInput">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Cover Letter <span class="text-danger">*</span></label>
-                            <textarea name="cover_letter" class="form-control @error('cover_letter') is-invalid @enderror"
-                                rows="5" placeholder="Tuliskan motivasi dan alasan kamu melamar posisi ini...">{{ old('cover_letter') }}</textarea>
-                            @error('cover_letter')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <textarea id="coverLetterInput" class="form-control" rows="5"
+                                placeholder="Tuliskan motivasi dan alasan kamu melamar posisi ini...">{{ old('cover_letter') }}</textarea>
+                            <div id="coverLetterError" class="text-danger small mt-1" style="display:none">Cover letter minimal 20 karakter!</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Expected Salary (Gaji yang Diharapkan)</label>
-                            <input type="text" name="expected_salary" class="form-control"
+                            <input type="text" id="expectedSalaryInput" class="form-control"
                                 placeholder="Contoh: Rp 8.000.000 - Rp 10.000.000"
                                 value="{{ old('expected_salary') }}">
                             <small class="text-muted">Opsional - kosongkan jika ingin negosiasi</small>
                         </div>
-                        <button type="submit" class="btn btn-primary px-4">
-                            🚀 Kirim Lamaran
+                        <button type="button" onclick="showConfirmation()" class="btn btn-primary px-4">
+                            📋 Review Lamaran
                         </button>
-                    </form>
+                    </div>
+
+                    {{-- Halaman Konfirmasi --}}
+                    <div id="konfirmasiLamaran" style="display:none">
+                        <div class="alert alert-info">
+                            <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Ringkasan Lamaran Kamu</h6>
+                            <hr>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Posisi</div>
+                                <div class="col-md-8">{{ $jobListing->title }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Perusahaan</div>
+                                <div class="col-md-8">{{ $jobListing->company }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Lokasi</div>
+                                <div class="col-md-8">{{ $jobListing->location }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Gaji Diharapkan</div>
+                                <div class="col-md-8" id="konfirmasiSalary">-</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Cover Letter</div>
+                                <div class="col-md-8">
+                                    <div class="bg-white p-2 rounded border" id="konfirmasiCoverLetter"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            ⚠️ Pastikan semua informasi sudah benar sebelum mengirim lamaran!
+                        </div>
+
+                        <form method="POST" action="{{ route('jobs.apply', $jobListing->id) }}" id="formKirim">
+                            @csrf
+                            <input type="hidden" name="cover_letter" id="hiddenCoverLetter">
+                            <input type="hidden" name="expected_salary" id="hiddenExpectedSalary">
+                            <div class="d-flex gap-2">
+                                <button type="button" onclick="backToForm()" class="btn btn-secondary">
+                                    ← Edit Lamaran
+                                </button>
+                                <button type="submit" class="btn btn-success px-4">
+                                    🚀 Kirim Lamaran Sekarang
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                 @endif
             @else
                 <div class="alert alert-warning">
@@ -72,3 +120,36 @@
     </div>
 
 @endsection
+
+@push('js')
+<script>
+function showConfirmation() {
+    const coverLetter = document.getElementById('coverLetterInput').value;
+    const expectedSalary = document.getElementById('expectedSalaryInput').value;
+
+    // Validasi
+    if (coverLetter.length < 20) {
+        document.getElementById('coverLetterError').style.display = 'block';
+        return;
+    }
+    document.getElementById('coverLetterError').style.display = 'none';
+
+    // Isi konfirmasi
+    document.getElementById('konfirmasiCoverLetter').innerText = coverLetter;
+    document.getElementById('konfirmasiSalary').innerText = expectedSalary || 'Negosiasi';
+
+    // Isi hidden input
+    document.getElementById('hiddenCoverLetter').value = coverLetter;
+    document.getElementById('hiddenExpectedSalary').value = expectedSalary;
+
+    // Tampilkan konfirmasi
+    document.getElementById('formInput').style.display = 'none';
+    document.getElementById('konfirmasiLamaran').style.display = 'block';
+}
+
+function backToForm() {
+    document.getElementById('formInput').style.display = 'block';
+    document.getElementById('konfirmasiLamaran').style.display = 'none';
+}
+</script>
+@endpush
