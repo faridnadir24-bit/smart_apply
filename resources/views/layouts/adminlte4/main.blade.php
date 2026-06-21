@@ -144,6 +144,12 @@
                     <p>Lamaran Saya</p>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a href="{{ route('cover-letters.index') }}" class="nav-link {{ Request::routeIs('cover-letters.*') ? 'active' : '' }}">
+                     <i class="nav-icon bi bi-magic"></i>
+                      <p>Surat Lamaran AI</p>
+                   </a>
+                </li>
               @endif
             </ul>
           </nav>

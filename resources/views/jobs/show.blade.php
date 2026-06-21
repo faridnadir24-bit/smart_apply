@@ -64,6 +64,15 @@
                     </div>
                 @endauth
 
+                @auth
+                 @if(auth()->user()->hasRole('user') || !auth()->user()->hasRole('admin'))
+                        <a href="{{ route('cover-letters.from-job', $jobListing) }}"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl inline-block mt-4">
+                            ✨ Buat Surat Lamaran dengan AI
+                        </a>
+                    @endif
+                @endauth
+
             </div>
         </div>
     </div>
