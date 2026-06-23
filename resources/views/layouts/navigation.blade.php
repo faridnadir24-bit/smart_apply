@@ -24,6 +24,9 @@
                     <x-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.*')">
                         {{ __('Lamaran Saya') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('cover-letters.index')" :active="request()->routeIs('cover-letters.*')">
+                        {{ __('Surat Lamaran AI') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -84,6 +87,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.*')">
                 {{ __('Lamaran Saya') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('cover-letters.index')" :active="request()->routeIs('cover-letters.*')">
+                 {{ __('Surat Lamaran AI') }}
             </x-responsive-nav-link>
         </div>
 

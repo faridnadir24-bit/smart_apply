@@ -109,13 +109,20 @@
                         </form>
                     </div>
 
+@endif
+
+                {{-- Tombol Generate Surat Lamaran AI --}}
+                @if(auth()->user()->hasRole('user'))
+                    <a href="{{ route('cover-letters.from-job', $jobListing) }}"
+                        class="btn btn-info mt-3 d-inline-block">
+                        ✨ Buat Surat Lamaran dengan AI
+                    </a>
                 @endif
             @else
                 <div class="alert alert-warning">
                     <a href="{{ route('login') }}" class="alert-link fw-bold">Login</a> terlebih dahulu untuk melamar.
                 </div>
             @endauth
-
         </div>
     </div>
 
