@@ -1,39 +1,22 @@
 <!doctype html>
 <html lang="en">
-  <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>SmartApply</title>
-
-    <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-    <!--end::Accessibility Meta Tags-->
-
-    <!--begin::Fonts-->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-      integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q="
-      crossorigin="anonymous"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <!--end::Fonts-->
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous" media="print" onload="this.media = 'all'" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0-rc7/dist/css/adminlte.min.css">
     @vite(['resources/css/adminlte-custom.css', 'resources/js/adminlte-custom.js'])
     @stack('css')
   </head>
-  <!--end::Head-->
   <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">
 
-      <!--begin::Header-->
       <nav class="app-header navbar navbar-expand bg-body">
         <div class="container-fluid">
           <ul class="navbar-nav">
@@ -48,6 +31,20 @@
           </ul>
 
           <ul class="navbar-nav ms-auto">
+            @if(!Auth::user()->hasRole('admin'))
+              @php $pendingCount = App\Models\Application::where('user_id', Auth::id())->where('status', 'pending')->count(); @endphp
+              <li class="nav-item" style="position:relative">
+                <a class="nav-link" href="{{ route('applications.index') }}">
+                  <i class="bi bi-bell-fill fs-5"></i>
+                  @if($pendingCount > 0)
+                    <span class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center"
+                      style="position:absolute; top:4px; right:2px; width:18px; height:18px; font-size:10px; font-weight:bold;">
+                      {{ $pendingCount }}
+                    </span>
+                  @endif
+                </a>
+              </li>
+            @endif
             <li class="nav-item">
               <a class="nav-link" href="#" data-lte-toggle="fullscreen">
                 <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
@@ -85,9 +82,7 @@
           </ul>
         </div>
       </nav>
-      <!--end::Header-->
 
-      <!--begin::Sidebar-->
       <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
         <div class="sidebar-brand">
           <a href="{{ Auth::user()->hasRole('admin') ? route('admin.dashboard') : route('dashboard') }}" class="brand-link">
@@ -98,14 +93,7 @@
 
         <div class="sidebar-wrapper">
           <nav class="mt-2">
-            <ul
-              class="nav sidebar-menu flex-column"
-              data-lte-toggle="treeview"
-              role="navigation"
-              aria-label="Main navigation"
-              data-accordion="false"
-              id="navigation"
-            >
+            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="navigation">
               @if(Auth::user()->hasRole('admin'))
                 <li class="nav-item">
                   <a href="{{ route('admin.dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -141,7 +129,12 @@
                 <li class="nav-item">
                   <a href="{{ route('applications.index') }}" class="nav-link {{ Request::routeIs('applications.*') ? 'active' : '' }}">
                     <i class="nav-icon bi bi-file-earmark-text-fill"></i>
-                    <p>Lamaran Saya</p>
+                    <p>Lamaran Saya
+                      @php $jumlahLamaran = App\Models\Application::where('user_id', Auth::id())->count(); @endphp
+                      @if($jumlahLamaran > 0)
+                        <span class="badge rounded-pill bg-warning text-dark float-end">{{ $jumlahLamaran }}</span>
+                      @endif
+                    </p>
                   </a>
                 </li>
                 <li class="nav-item">
@@ -155,9 +148,7 @@
           </nav>
         </div>
       </aside>
-      <!--end::Sidebar-->
 
-      <!--begin::App Main-->
       <main class="app-main">
         <div class="app-content-header">
           <div class="container-fluid">
@@ -179,13 +170,23 @@
 
         <div class="app-content">
           <div class="container-fluid">
+            @if(session('success'))
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            @endif
+            @if(session('error'))
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            @endif
             @yield('content')
           </div>
         </div>
       </main>
-      <!--end::App Main-->
 
-      <!--begin::Footer-->
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">SmartApply v1.0</div>
         <strong>
@@ -194,7 +195,6 @@
         </strong>
         All rights reserved.
       </footer>
-      <!--end::Footer-->
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js" crossorigin="anonymous"></script>

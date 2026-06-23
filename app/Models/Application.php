@@ -11,6 +11,7 @@ class Application extends Model
         'job_listing_id',
         'status',
         'cover_letter',
+        'expected_salary',
     ];
 
     public function user()

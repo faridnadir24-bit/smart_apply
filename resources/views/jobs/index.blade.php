@@ -4,13 +4,19 @@
 
 @section('content')
 
+@php
+    $appliedJobIds = Auth::check()
+        ? App\Models\Application::where('user_id', Auth::id())->pluck('job_listing_id')->toArray()
+        : [];
+@endphp
+
     {{-- Search & Filter --}}
     <form method="GET" action="{{ route('jobs.index') }}" class="row g-2 mb-4">
-        <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Cari posisi, perusahaan, lokasi..."
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="Cari posisi, perusahaan..."
                 value="{{ request('search') }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <select name="type" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Tipe</option>
                 <option value="Full-time" {{ request('type') == 'Full-time' ? 'selected' : '' }}>Full-time</option>
@@ -18,7 +24,27 @@
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">🔍 Cari</button>
+            <select name="location" class="form-select" onchange="this.form.submit()">
+                <option value="">Semua Lokasi</option>
+                @foreach(App\Models\JobListing::distinct()->pluck('location') as $loc)
+                    <option value="{{ $loc }}" {{ request('location') == $loc ? 'selected' : '' }}>{{ $loc }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="sort" class="form-select" onchange="this.form.submit()">
+                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
+                <option value="salary_high" {{ request('sort') == 'salary_high' ? 'selected' : '' }}>Gaji Tertinggi</option>
+                <option value="salary_low" {{ request('sort') == 'salary_low' ? 'selected' : '' }}>Gaji Terendah</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="applied" class="form-select" onchange="this.form.submit()">
+                <option value="">Semua Status</option>
+                <option value="belum" {{ request('applied') == 'belum' ? 'selected' : '' }}>Belum Dilamar</option>
+                <option value="sudah" {{ request('applied') == 'sudah' ? 'selected' : '' }}>Sudah Dilamar</option>
+            </select>
         </div>
         <div class="col-md-1">
             <a href="{{ route('jobs.index') }}" class="btn btn-secondary w-100">Reset</a>
@@ -28,14 +54,20 @@
     {{-- Job Cards --}}
     <div class="row g-4">
         @forelse($jobs as $job)
+        @php $sudahLamar = in_array($job->id, $appliedJobIds); @endphp
         <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card h-100 shadow-sm border-0 rounded-3 {{ $sudahLamar ? 'border-success border-2' : '' }}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="card-title fw-bold mb-0">{{ $job->title }}</h5>
-                        <span class="badge {{ $job->type == 'Full-time' ? 'bg-success' : 'bg-warning text-dark' }}">
-                            {{ $job->type }}
-                        </span>
+                        <div class="d-flex gap-1 flex-column align-items-end">
+                            <span class="badge {{ $job->type == 'Full-time' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ $job->type }}
+                            </span>
+                            @if($sudahLamar)
+                                <span class="badge bg-info">✓ Sudah Dilamar</span>
+                            @endif
+                        </div>
                     </div>
                     <p class="text-muted mb-1"><i class="bi bi-building me-1"></i> {{ $job->company }}</p>
                     <p class="text-muted mb-1"><i class="bi bi-geo-alt me-1"></i> {{ $job->location }}</p>
@@ -43,9 +75,15 @@
                     <p class="card-text text-secondary small">{{ Str::limit($job->description, 100) }}</p>
                 </div>
                 <div class="card-footer bg-transparent border-0 pb-3">
-                    <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-primary btn-sm w-100">
-                        Lihat Detail & Lamar
-                    </a>
+                    @if($sudahLamar)
+                        <a href="{{ route('applications.index') }}" class="btn btn-success btn-sm w-100">
+                            ✓ Lihat Lamaran Saya
+                        </a>
+                    @else
+                        <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-primary btn-sm w-100">
+                            Lihat Detail & Lamar
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>

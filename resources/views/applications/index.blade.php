@@ -25,6 +25,7 @@
                             <th>Lokasi</th>
                             <th>Status</th>
                             <th>Tanggal Lamar</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,6 +47,22 @@
                                 @endif
                             </td>
                             <td>{{ $app->created_at->format('d M Y') }}</td>
+                            <td>
+                                <a href="{{ route('applications.show', $app->id) }}" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i> Detail
+                                </a>
+                                @if($app->status == 'pending')
+                                <form method="POST" action="{{ route('applications.destroy', $app->id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Yakin ingin membatalkan lamaran ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Batal
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>

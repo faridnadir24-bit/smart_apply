@@ -48,6 +48,8 @@ Route::get('/jobs/{jobListing}', [JobListingController::class, 'show'])->name('j
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/jobs/{jobListing}/apply', [JobListingController::class, 'apply'])->name('jobs.apply');
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
 });
 
 // Routes LOWONGAN & LAMARAN (Mhs 2)

@@ -16,9 +16,11 @@ class JobListingController extends Controller
 
         // Fitur search
         if ($request->has('search') && $request->search != '') {
-            $query->where('title', 'like', '%' . $request->search . '%')
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('company', 'like', '%' . $request->search . '%')
                   ->orWhere('location', 'like', '%' . $request->search . '%');
+            });
         }
 
         // Fitur filter tipe
@@ -26,7 +28,42 @@ class JobListingController extends Controller
             $query->where('type', $request->type);
         }
 
-        $jobs = $query->latest()->paginate(6);
+        // Fitur filter lokasi
+        if ($request->has('location') && $request->location != '') {
+            $query->where('location', $request->location);
+        }
+
+        // Fitur filter sudah/belum dilamar
+        if ($request->has('applied') && $request->applied != '' && Auth::check()) {
+            $appliedIds = Application::where('user_id', Auth::id())->pluck('job_listing_id');
+            if ($request->applied == 'sudah') {
+                $query->whereIn('id', $appliedIds);
+            } elseif ($request->applied == 'belum') {
+                $query->whereNotIn('id', $appliedIds);
+            }
+        }
+
+        // Fitur sortir
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'salary_high':
+                    $query->orderBy('salary', 'asc');
+                    break;
+                case 'salary_low':
+                    $query->orderBy('salary', 'desc');
+                    break;
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $jobs = $query->paginate(6);
 
         return view('jobs.index', compact('jobs'));
     }
@@ -59,6 +96,7 @@ class JobListingController extends Controller
 
         $request->validate([
             'cover_letter' => 'required|min:20',
+            'expected_salary' => 'nullable|string|max:100',
         ]);
 
         Application::create([
@@ -66,6 +104,7 @@ class JobListingController extends Controller
             'job_listing_id' => $jobListing->id,
             'status' => 'pending',
             'cover_letter' => $request->cover_letter,
+            'expected_salary' => $request->expected_salary,
         ]);
 
         return redirect()->route('applications.index')->with('success', 'Lamaran berhasil dikirim!');

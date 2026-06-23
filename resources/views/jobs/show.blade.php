@@ -1,79 +1,162 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Detail Lowongan
-        </h2>
-    </x-slot>
+@extends('layouts.adminlte4.main')
 
-    <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+@section('header', 'Detail Lowongan')
 
-            <a href="{{ route('jobs.index') }}" class="text-blue-600 hover:underline text-sm mb-4 inline-block">
-                ← Kembali ke Daftar Lowongan
-            </a>
+@section('content')
 
-            <div class="bg-white rounded-xl shadow p-6 mt-2">
+    <a href="{{ route('jobs.index') }}" class="btn btn-secondary mb-3">
+        ← Kembali ke Daftar Lowongan
+    </a>
 
-                <div class="flex justify-between items-start mb-3">
-                    <h2 class="text-2xl font-bold">{{ $jobListing->title }}</h2>
-                    <span class="text-xs px-3 py-1 rounded-full {{ $jobListing->type == 'Full-time' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                        {{ $jobListing->type }}
-                    </span>
-                </div>
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
 
-                <p class="text-gray-500">🏢 {{ $jobListing->company }}</p>
-                <p class="text-gray-500">📍 {{ $jobListing->location }}</p>
-                <p class="text-green-600 font-semibold mt-1">💰 {{ $jobListing->salary ?? 'Negosiasi' }}</p>
-
-                <hr class="my-4">
-
-                <h4 class="font-bold text-lg mb-2">Deskripsi Pekerjaan</h4>
-                <p class="text-gray-600">{{ $jobListing->description }}</p>
-
-                <hr class="my-4">
-
-                @auth
-                    @if($hasApplied)
-                        <div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg">
-                            ✅ Kamu sudah melamar pekerjaan ini!
-                        </div>
-                    @else
-                        <h4 class="font-bold text-lg mb-3">📝 Kirim Lamaran</h4>
-                        @if(session('error'))
-                            <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg mb-3">{{ session('error') }}</div>
-                        @endif
-                        <form method="POST" action="{{ route('jobs.apply', $jobListing->id) }}">
-                            @csrf
-                            <div class="mb-4">
-                                <label class="block font-semibold mb-1">Cover Letter</label>
-                                <textarea name="cover_letter" rows="5"
-                                    class="w-full border rounded-lg px-4 py-2 @error('cover_letter') border-red-500 @enderror"
-                                    placeholder="Tuliskan motivasi dan alasan kamu melamar posisi ini...">{{ old('cover_letter') }}</textarea>
-                                @error('cover_letter')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
-                                🚀 Kirim Lamaran
-                            </button>
-                        </form>
-                    @endif
-                @else
-                    <div class="bg-yellow-100 text-yellow-700 px-4 py-3 rounded-lg">
-                        <a href="{{ route('login') }}" class="underline font-semibold">Login</a> terlebih dahulu untuk melamar.
-                    </div>
-                @endauth
-
-                @auth
-                 @if(auth()->user()->hasRole('user') || !auth()->user()->hasRole('admin'))
-                        <a href="{{ route('cover-letters.from-job', $jobListing) }}"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl inline-block mt-4">
-                            ✨ Buat Surat Lamaran dengan AI
-                        </a>
-                    @endif
-                @endauth
-
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h2 class="fw-bold">{{ $jobListing->title }}</h2>
+                <span class="badge {{ $jobListing->type == 'Full-time' ? 'bg-success' : 'bg-warning text-dark' }} fs-6">
+                    {{ $jobListing->type }}
+                </span>
             </div>
+
+            <p class="text-muted"><i class="bi bi-building me-2"></i>{{ $jobListing->company }}</p>
+            <p class="text-muted"><i class="bi bi-geo-alt me-2"></i>{{ $jobListing->location }}</p>
+            <p class="text-success fw-bold"><i class="bi bi-cash me-2"></i>{{ $jobListing->salary ?? 'Negosiasi' }}</p>
+
+            <hr>
+
+            <h5 class="fw-bold">Deskripsi Pekerjaan</h5>
+            <p class="text-secondary">{{ $jobListing->description }}</p>
+
+            <hr>
+
+            @auth
+                @if($hasApplied)
+                    <div class="alert alert-success">
+                        ✅ Kamu sudah melamar pekerjaan ini!
+                        <a href="{{ route('applications.index') }}" class="alert-link">Lihat lamaran kamu</a>
+                    </div>
+                @else
+                    <h5 class="fw-bold mb-3">📝 Kirim Lamaran</h5>
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+
+                    {{-- Form Input --}}
+                    <div id="formInput">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Cover Letter <span class="text-danger">*</span></label>
+                            <textarea id="coverLetterInput" class="form-control" rows="5"
+                                placeholder="Tuliskan motivasi dan alasan kamu melamar posisi ini...">{{ old('cover_letter') }}</textarea>
+                            <div id="coverLetterError" class="text-danger small mt-1" style="display:none">Cover letter minimal 20 karakter!</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Expected Salary (Gaji yang Diharapkan)</label>
+                            <input type="text" id="expectedSalaryInput" class="form-control"
+                                placeholder="Contoh: Rp 8.000.000 - Rp 10.000.000"
+                                value="{{ old('expected_salary') }}">
+                            <small class="text-muted">Opsional - kosongkan jika ingin negosiasi</small>
+                        </div>
+                        <button type="button" onclick="showConfirmation()" class="btn btn-primary px-4">
+                            📋 Review Lamaran
+                        </button>
+                    </div>
+
+                    {{-- Halaman Konfirmasi --}}
+                    <div id="konfirmasiLamaran" style="display:none">
+                        <div class="alert alert-info">
+                            <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Ringkasan Lamaran Kamu</h6>
+                            <hr>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Posisi</div>
+                                <div class="col-md-8">{{ $jobListing->title }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Perusahaan</div>
+                                <div class="col-md-8">{{ $jobListing->company }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Lokasi</div>
+                                <div class="col-md-8">{{ $jobListing->location }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Gaji Diharapkan</div>
+                                <div class="col-md-8" id="konfirmasiSalary">-</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 fw-bold">Cover Letter</div>
+                                <div class="col-md-8">
+                                    <div class="bg-white p-2 rounded border" id="konfirmasiCoverLetter"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            ⚠️ Pastikan semua informasi sudah benar sebelum mengirim lamaran!
+                        </div>
+
+                        <form method="POST" action="{{ route('jobs.apply', $jobListing->id) }}" id="formKirim">
+                            @csrf
+                            <input type="hidden" name="cover_letter" id="hiddenCoverLetter">
+                            <input type="hidden" name="expected_salary" id="hiddenExpectedSalary">
+                            <div class="d-flex gap-2">
+                                <button type="button" onclick="backToForm()" class="btn btn-secondary">
+                                    ← Edit Lamaran
+                                </button>
+                                <button type="submit" class="btn btn-success px-4">
+                                    🚀 Kirim Lamaran Sekarang
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+@endif
+
+                {{-- Tombol Generate Surat Lamaran AI --}}
+                @if(auth()->user()->hasRole('user'))
+                    <a href="{{ route('cover-letters.from-job', $jobListing) }}"
+                        class="btn btn-info mt-3 d-inline-block">
+                        ✨ Buat Surat Lamaran dengan AI
+                    </a>
+                @endif
+            @else
+                <div class="alert alert-warning">
+                    <a href="{{ route('login') }}" class="alert-link fw-bold">Login</a> terlebih dahulu untuk melamar.
+                </div>
+            @endauth
         </div>
     </div>
-</x-app-layout>
+
+@endsection
+
+@push('js')
+<script>
+function showConfirmation() {
+    const coverLetter = document.getElementById('coverLetterInput').value;
+    const expectedSalary = document.getElementById('expectedSalaryInput').value;
+
+    // Validasi
+    if (coverLetter.length < 20) {
+        document.getElementById('coverLetterError').style.display = 'block';
+        return;
+    }
+    document.getElementById('coverLetterError').style.display = 'none';
+
+    // Isi konfirmasi
+    document.getElementById('konfirmasiCoverLetter').innerText = coverLetter;
+    document.getElementById('konfirmasiSalary').innerText = expectedSalary || 'Negosiasi';
+
+    // Isi hidden input
+    document.getElementById('hiddenCoverLetter').value = coverLetter;
+    document.getElementById('hiddenExpectedSalary').value = expectedSalary;
+
+    // Tampilkan konfirmasi
+    document.getElementById('formInput').style.display = 'none';
+    document.getElementById('konfirmasiLamaran').style.display = 'block';
+}
+
+function backToForm() {
+    document.getElementById('formInput').style.display = 'block';
+    document.getElementById('konfirmasiLamaran').style.display = 'none';
+}
+</script>
+@endpush
