@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#171010" media="(prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous" media="print" onload="this.media = 'all'" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" crossorigin="anonymous" />
@@ -17,6 +17,7 @@
   <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">
 
+      {{-- ===== NAVBAR ===== --}}
       <nav class="app-header navbar navbar-expand bg-body">
         <div class="container-fluid">
           <ul class="navbar-nav">
@@ -31,6 +32,7 @@
           </ul>
 
           <ul class="navbar-nav ms-auto">
+            {{-- Notifikasi (hanya user) --}}
             @if(!Auth::user()->hasRole('admin'))
               @php $pendingCount = App\Models\Application::where('user_id', Auth::id())->where('status', 'pending')->count(); @endphp
               <li class="nav-item" style="position:relative">
@@ -45,12 +47,16 @@
                 </a>
               </li>
             @endif
+
+            {{-- Fullscreen --}}
             <li class="nav-item">
               <a class="nav-link" href="#" data-lte-toggle="fullscreen">
                 <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
                 <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none"></i>
               </a>
             </li>
+
+            {{-- User Dropdown --}}
             <li class="nav-item dropdown user-menu">
               <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                 <i class="bi bi-person-circle fs-5 me-1"></i>
@@ -83,17 +89,47 @@
         </div>
       </nav>
 
-      <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
-        <div class="sidebar-brand">
-          <a href="{{ Auth::user()->hasRole('admin') ? route('admin.dashboard') : route('dashboard') }}" class="brand-link">
-            <i class="bi bi-file-earmark-person-fill brand-image opacity-75 shadow fs-4 ms-2"></i>
-            <span class="brand-text fw-light">SmartApply</span>
+      {{-- ===== SIDEBAR ===== --}}
+      <aside class="app-sidebar shadow" data-bs-theme="dark"
+        style="background: linear-gradient(180deg, #0f2d52 0%, #1a4a7a 50%, #1e3a5f 100%) !important;">
+
+        {{-- Brand / Logo --}}
+        <div class="sidebar-brand" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <a href="{{ Auth::user()->hasRole('admin') ? route('admin.dashboard') : route('dashboard') }}"
+            class="brand-link"
+            style="padding: 1rem 1.2rem; display:flex; align-items:center; gap:0.6rem; text-decoration:none;">
+            <div style="
+              width: 38px; height: 38px;
+              background: linear-gradient(135deg, #3182ce, #63b3ed);
+              border-radius: 11px;
+              display: flex; align-items: center; justify-content: center;
+              box-shadow: 0 4px 15px rgba(66,153,225,0.5);
+              flex-shrink: 0;
+            ">
+              <i class="bi bi-send-fill text-white" style="font-size: 1.05rem;"></i>
+            </div>
+            <div style="line-height: 1.1;">
+              <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; color: white;">
+                SmartApply
+              </div>
+              <div style="font-size: 0.65rem; color: rgba(255,255,255,0.5); font-weight: 500; letter-spacing: 0.5px;">
+                AI Job Assistant
+              </div>
+            </div>
           </a>
         </div>
 
+        {{-- Sidebar Menu --}}
         <div class="sidebar-wrapper">
           <nav class="mt-2">
-            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false" id="navigation">
+            <ul class="nav sidebar-menu flex-column"
+              data-lte-toggle="treeview"
+              role="navigation"
+              aria-label="Main navigation"
+              data-accordion="false"
+              id="navigation">
+
+              {{-- Menu Admin --}}
               @if(Auth::user()->hasRole('admin'))
                 <li class="nav-item">
                   <a href="{{ route('admin.dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -107,6 +143,8 @@
                     <p>Data Pelamar</p>
                   </a>
                 </li>
+
+              {{-- Menu User --}}
               @else
                 <li class="nav-item">
                   <a href="{{ route('dashboard') }}" class="nav-link {{ Request::routeIs('dashboard') ? 'active' : '' }}">
@@ -139,9 +177,9 @@
                 </li>
                 <li class="nav-item">
                   <a href="{{ route('cover-letters.index') }}" class="nav-link {{ Request::routeIs('cover-letters.*') ? 'active' : '' }}">
-                     <i class="nav-icon bi bi-magic"></i>
-                      <p>Surat Lamaran AI</p>
-                   </a>
+                    <i class="nav-icon bi bi-magic"></i>
+                    <p>Surat Lamaran AI</p>
+                  </a>
                 </li>
               @endif
             </ul>
@@ -149,7 +187,10 @@
         </div>
       </aside>
 
+      {{-- ===== MAIN CONTENT ===== --}}
       <main class="app-main">
+
+        {{-- Page Header --}}
         <div class="app-content-header">
           <div class="container-fluid">
             <div class="row">
@@ -168,6 +209,7 @@
           </div>
         </div>
 
+        {{-- Content --}}
         <div class="app-content">
           <div class="container-fluid">
             @if(session('success'))
@@ -187,6 +229,7 @@
         </div>
       </main>
 
+      {{-- ===== FOOTER ===== --}}
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">SmartApply v1.0</div>
         <strong>
@@ -197,6 +240,7 @@
       </footer>
     </div>
 
+    {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
