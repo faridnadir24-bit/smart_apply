@@ -1,65 +1,82 @@
-{{-- resources/views/cover-letters/index.blade.php --}}
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                📁 Riwayat Surat Lamaran
-            </h2>
-            <a href="{{ route('cover-letters.create') }}"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
-                ✨ Buat Surat Baru
+@extends('layouts.adminlte4.main')
+
+@section('header', 'Surat Lamaran AI')
+
+@section('content')
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <p class="text-muted mb-0">Kelola surat lamaran yang dibuat dengan bantuan AI</p>
+        <a href="{{ route('cover-letters.create') }}" class="btn btn-primary">
+            <i class="bi bi-stars me-2"></i>Buat Surat Baru
+        </a>
+    </div>
+</div>
+
+@if($coverLetters->isEmpty())
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-envelope-x text-muted" style="font-size: 64px;"></i>
+            <h5 class="mt-3 text-muted">Belum ada surat lamaran</h5>
+            <p class="text-muted small">Buat surat lamaran pertama kamu dengan bantuan AI!</p>
+            <a href="{{ route('cover-letters.create') }}" class="btn btn-primary mt-2">
+                <i class="bi bi-stars me-2"></i>Buat Surat Pertama
             </a>
         </div>
-    </x-slot>
-
-    <div class="py-8 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                ✅ {{ session('success') }}
-            </div>
-        @endif
-
-        @if($coverLetters->isEmpty())
-            <div class="bg-white rounded-2xl shadow p-12 text-center">
-                <p class="text-5xl mb-4">📭</p>
-                <p class="text-gray-500 text-lg">Belum ada surat lamaran yang dibuat.</p>
-                <a href="{{ route('cover-letters.create') }}"
-                    class="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg">
-                    Buat Surat Pertama
-                </a>
-            </div>
-        @else
-            <div class="space-y-4">
-                @foreach($coverLetters as $letter)
-                    <div class="bg-white rounded-2xl shadow p-5 flex items-center justify-between hover:shadow-md transition">
-                        <div>
-                            <p class="font-semibold text-gray-800">{{ $letter->job_title }}</p>
-                            <p class="text-gray-500 text-sm">{{ $letter->company_name }}</p>
-                            <p class="text-gray-400 text-xs mt-1">{{ $letter->created_at->format('d M Y') }}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <a href="{{ route('cover-letters.show', $letter) }}"
-                                class="text-blue-600 hover:text-blue-800 text-sm border border-blue-300 hover:border-blue-500 px-3 py-1.5 rounded-lg transition">
-                                Lihat
-                            </a>
-                            <form action="{{ route('cover-letters.destroy', $letter) }}" method="POST"
-                                onsubmit="return confirm('Hapus surat ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="text-red-500 hover:text-red-700 text-sm border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition">
-                                    Hapus
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="mt-6">
-                {{ $coverLetters->links() }}
-            </div>
-        @endif
     </div>
-</x-app-layout>
+@else
+    <div class="row">
+        @foreach($coverLetters as $letter)
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold text-truncate" style="max-width: 200px;">
+                        <i class="bi bi-file-earmark-text me-2"></i>{{ $letter->job_title }}
+                    </span>
+                    <span class="badge bg-white text-primary">AI</span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">
+                        <i class="bi bi-building text-primary me-2"></i>
+                        <strong>{{ $letter->company_name }}</strong>
+                    </p>
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        {{ $letter->created_at->format('d M Y') }}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                    <a href="{{ route('cover-letters.show', $letter) }}"
+                        class="btn btn-outline-primary btn-sm flex-fill">
+                        <i class="bi bi-eye me-1"></i>Lihat
+                    </a>
+                    <form action="{{ route('cover-letters.destroy', $letter) }}" method="POST"
+                        onsubmit="return confirm('Hapus surat ini?')" class="flex-fill">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                            <i class="bi bi-trash me-1"></i>Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    <div class="mt-2">
+        {{ $coverLetters->links() }}
+    </div>
+@endif
+
+@endsection
+
+@push('js')
+@endpush
