@@ -1,6 +1,1 @@
-{
-  "php": {
-    "version": "8.4.1"
-  },
-  "composerFlags": "--no-dev --optimize-autoloader --no-interaction --no-scripts"
-}
+{"php": {"version": "8.3"}}
