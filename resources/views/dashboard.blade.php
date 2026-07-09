@@ -1,6 +1,6 @@
 @extends('layouts.adminlte4.main')
 
-@section('header', 'Dashboard')
+@section('header', 'Dashboard saya')
 
 @push('css')
 <style>
